@@ -1,0 +1,11 @@
+# MacOS
+.DS_Store
+
+# IntelliJ Idea
+.idea
+
+# AWS SAM
+.aws-sam
+
+# Maven
+target
