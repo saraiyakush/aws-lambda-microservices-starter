@@ -1,12 +1,53 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  SQSArn:
+    Type: String
+    Description: Enter the full ARN of the SQS queue from where this function will read messages.
+
 Resources:
   MicroservicesStarterFunction:
     Type: AWS::Serverless::Function
     Properties:
       Description: Spring Boot Microservices Starter
       CodeUri: .
-      Handler: lambda.App::handleRequest
+      Handler: App::handleRequest
       Runtime: java11
       MemorySize: 256
+      Role:
+        Fn::GetAtt: ['MicroservicesStarterFunctionRole', 'Arn']
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue:
+              Ref: SQSArn
+
+  MicroservicesStarterFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: SQSPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+                - Effect: Allow
+                  Action:
+                    - 'sqs:ReceiveMessage'
+                    - 'sqs:DeleteMessage'
+                    - 'sqs:GetQueueUrl'
+                    - 'sqs:GetQueueAttributes'
+                  Resource:
+                    Ref: SQSArn

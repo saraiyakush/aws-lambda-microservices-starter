@@ -1,3 +1,3 @@
 ## Introduction
 
-A Spring Boot starter application for getting started with writing microservices using AWS Lambda and SQS.
+A Java starter application for getting started with writing microservices using AWS Lambda and SQS.
