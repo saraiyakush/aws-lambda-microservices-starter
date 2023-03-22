@@ -1,16 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  SQSArn:
-    Type: String
-    Description: Enter the full ARN of the SQS queue from where this function will read messages.
-
 Resources:
   MicroservicesStarterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: Java Microservices Starter
+      Description: Lambda function to consume messages from SQS
       CodeUri: .
       Handler: App::handleRequest
       Runtime: java11
@@ -22,7 +17,16 @@ Resources:
           Type: SQS
           Properties:
             Queue:
-              Ref: SQSArn
+              Fn::GetAtt:
+                - MicroservicesStarterQueue
+                - Arn
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+
+  MicroservicesStarterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: StandardQueue
 
   MicroservicesStarterFunctionRole:
     Type: AWS::IAM::Role
@@ -50,4 +54,6 @@ Resources:
                     - 'sqs:GetQueueUrl'
                     - 'sqs:GetQueueAttributes'
                   Resource:
-                    Ref: SQSArn
+                    Fn::GetAtt:
+                      - MicroservicesStarterQueue
+                      - Arn
